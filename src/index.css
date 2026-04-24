@@ -39,3 +39,34 @@ body {
 .flex::-webkit-scrollbar {
   display: none;
 }
+@keyframes mosaicFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(1.2);
+  }
+  to {
+    opacity: 0.4;
+    transform: scale(1.1);
+  }
+}
+
+.login-mosaic {
+  animation: mosaicFadeIn 1.5s ease-out forwards;
+}
+
+@keyframes floatMosaic {
+  0%,
+  100% {
+    transform: scale(1.1) translateY(0);
+  }
+  50% {
+    transform: scale(1.1) translateY(-10px);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .login-mosaic {
+    animation: mosaicFadeIn 1.5s ease-out forwards,
+      floatMosaic 20s ease-in-out infinite 1.5s;
+  }
+}

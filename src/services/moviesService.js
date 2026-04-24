@@ -232,3 +232,18 @@ export async function getTopMovies(limit = 20) {
     genres: movie.movie_genres.map(mg => mg.genres),
   }));
 }
+
+export async function getRandomPosters(limit = 30) {
+  const { data, error } = await supabase
+    .from('movies')
+    .select('id, title, poster_path')
+    .not('poster_path', 'is', null)
+    .order('popularity', { ascending: false })
+    .limit(200);
+
+  if (error) throw error;
+  if (!data || data.length === 0) return [];
+
+  const shuffled = [...data].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, limit);
+}
