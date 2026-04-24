@@ -1,15 +1,25 @@
+// src/App.jsx
+import { Routes, Route } from 'react-router-dom';
+import Home from './pages/Home';
+import Login from './pages/Login';
+import ProtectedRoute from './components/ProtectedRoute';
+
 function App() {
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="text-center">
-        <h1 className="text-6xl font-bold text-netflix-red mb-4">
-          Movies Explorer
-        </h1>
-        <p className="text-xl text-gray-300">
-          Setup listo. Listos para construir. 🎬
-        </p>
-      </div>
-    </div>
+    <Routes>
+      {/* Ruta pública */}
+      <Route path="/login" element={<Login />} />
+
+      {/* Rutas protegidas */}
+      <Route
+        path="/"
+        element={
+          <ProtectedRoute>
+            <Home />
+          </ProtectedRoute>
+        }
+      />
+    </Routes>
   );
 }
 
