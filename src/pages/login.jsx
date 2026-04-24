@@ -150,8 +150,9 @@ export default function Login() {
             </button>
 
             <p className="text-gray-500 text-xs mt-8 max-w-md mx-auto">
-              Al continuar aceptas los términos de uso. Este producto utiliza la API de
-              TMDB pero no está respaldado ni certificado por TMDB.
+              Aplicación realizada por: <br/>
+              - Gustavo Ramírez Mireles <br/>
+              - Vanessa Fernanda Arreola García
             </p>
           </div>
         </main>
