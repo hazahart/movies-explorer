@@ -40,7 +40,7 @@ export default function Navbar({ onSearch }) {
       <div className="flex items-center justify-between px-8 py-4">
         <div className="flex items-center gap-8">
           <Link to="/" className="text-netflix-red text-3xl font-bold tracking-tight">
-            MOVIES
+            Movies<br/>Explorer
           </Link>
           <div className="hidden md:flex gap-6">
             <Link to="/" className="text-white hover:text-gray-300 transition text-sm">

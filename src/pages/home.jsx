@@ -7,6 +7,7 @@ import {
   getTopMovies,
   getMoviesByGenre,
 } from '../services/moviesService';
+import MovieRowSkeleton from '../components/MovieRowSkeleton';
 
 const GENRE_IDS = {
   ACCION: 28,
@@ -60,8 +61,14 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-netflix-black flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-netflix-red border-t-transparent rounded-full animate-spin" />
+      <div className="bg-netflix-black min-h-screen">
+        <Navbar />
+        <div className="h-[70vh] bg-gradient-to-b from-netflix-dark to-netflix-black animate-pulse" />
+        <div className="relative -mt-40 z-10 pb-16 space-y-2">
+          <MovieRowSkeleton />
+          <MovieRowSkeleton />
+          <MovieRowSkeleton />
+        </div>
       </div>
     );
   }
@@ -94,10 +101,9 @@ export default function Home() {
 
       <footer className="bg-netflix-black border-t border-netflix-gray py-8 px-8 md:px-16 text-center text-gray-500 text-sm">
         <p>
-          Esta aplicación utiliza la API de TMDB pero no está respaldada ni
-          certificada por TMDB.
+          Aplicación desarrollada para la materia: Tópicos Avanzados de Desarrollo Web
         </p>
-        <p className="mt-2">Movies Explorer © 2026</p>
+        <p className="mt-2">Movies Explorer - GVTeam © 2026</p>
       </footer>
     </div>
   );
