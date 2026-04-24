@@ -1,7 +1,3 @@
-// scripts/loadMovies.js
-// Carga películas populares de TMDb a Supabase con paginación.
-// Estrategia: descargar + insertar en chunks para resiliencia con volúmenes grandes.
-
 import dotenv from 'dotenv';
 import { supabaseAdmin } from './supabaseAdmin.js';
 
@@ -12,8 +8,8 @@ const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 
 // Configuración
 const TOTAL_PAGES = 500;       // 500 × 20 = 10,000 películas
-const PAGES_PER_CHUNK = 25;    // Procesar 25 páginas (500 pelis) por chunk
-const DELAY_MS = 250;          // Pausa entre requests a TMDb
+const PAGES_PER_CHUNK = 25;    // Procesar 25 páginas (500 películas) por chunk
+const DELAY_MS = 250;          // Pausa entre requests (para no saturar las 40 solicitudes cada 10 segundos de TMBd)
 const MAX_RETRIES = 3;         // Reintentos por página fallida
 
 if (!TMDB_API_KEY) {
@@ -23,13 +19,13 @@ if (!TMDB_API_KEY) {
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-// Pide UNA página con reintentos automáticos
+// Pide 1 página con reintentos automáticos
 async function fetchMoviesPage(page, attempt = 1) {
   const url = `${TMDB_BASE_URL}/movie/popular?api_key=${TMDB_API_KEY}&language=es-MX&page=${page}`;
   try {
     const response = await fetch(url);
     if (!response.ok) {
-      // Si TMDb devuelve 429 (rate limit) o 5xx, reintentamos
+      // Si TMDb devuelve un estado 429 o alguno de los 500, reintentamos
       if ((response.status === 429 || response.status >= 500) && attempt < MAX_RETRIES) {
         console.log(`  TMDb respondió ${response.status}, reintentando página ${page} (intento ${attempt + 1})...`);
         await sleep(2000 * attempt); // Backoff exponencial
@@ -48,7 +44,7 @@ async function fetchMoviesPage(page, attempt = 1) {
   }
 }
 
-// Transforma un objeto de TMDb al formato de nuestra tabla `movies`
+// Transforma el contenido traido de TMDB al formato de la tabla movies de Suoabase
 function transformMovie(tmdbMovie) {
   return {
     id: tmdbMovie.id,
@@ -94,7 +90,7 @@ async function processChunk(startPage, endPage) {
         }
       }
 
-      process.stdout.write(`\r  📄 Página ${page}/${TOTAL_PAGES}`);
+      process.stdout.write(`\r  Página ${page}/${TOTAL_PAGES}`);
       if (page < endPage) await sleep(DELAY_MS);
     } catch (err) {
       console.log(`\n  Página ${page} falló definitivamente: ${err.message}`);

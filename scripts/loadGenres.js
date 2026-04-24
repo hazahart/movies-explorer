@@ -15,7 +15,7 @@ async function loadGenres() {
   console.log('🎬 Cargando géneros desde TMDb...');
 
   try {
-    // 1. Pedir géneros a TMDb (en español)
+    // Pedir géneros a TMDb (en español)
     const url = `${TMDB_BASE_URL}/genre/movie/list?api_key=${TMDB_API_KEY}&language=es-MX`;
     const response = await fetch(url);
 
@@ -28,7 +28,7 @@ async function loadGenres() {
 
     console.log(`Recibidos ${genres.length} géneros de TMDb`);
 
-    // 2. Insertar en Supabase con UPSERT (si el id ya existe, lo actualiza)
+    // Insertar en Supabase con UPSERT (si el id ya existe, lo actualiza)
     const { data: inserted, error } = await supabaseAdmin
       .from('genres')
       .upsert(genres, { onConflict: 'id' })

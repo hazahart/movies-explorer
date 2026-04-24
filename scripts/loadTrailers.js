@@ -1,7 +1,3 @@
-// scripts/loadTrailers.js
-// Carga los trailers de YouTube para las películas ya existentes en Supabase.
-// Es idempotente: si lo corres varias veces, solo actualiza lo que falte o cambie.
-
 import dotenv from 'dotenv';
 import { supabaseAdmin } from './supabaseAdmin.js';
 
@@ -17,7 +13,7 @@ const MAX_RETRIES = 3;         // Reintentos por película
 const SKIP_EXISTING = true;    // Si true, omite películas que ya tienen trailer_key
 
 if (!TMDB_API_KEY) {
-  console.error('❌ Falta TMDB_API_KEY en .env.local');
+  console.error('Falta TMDB_API_KEY en .env.local');
   process.exit(1);
 }
 
@@ -88,7 +84,7 @@ async function fetchMovieVideos(movieId, attempt = 1) {
 
 async function loadTrailers() {
   // 1. Cargar IDs de películas desde Supabase (paginado para evitar límites)
-  console.log('📋 Obteniendo lista de películas desde Supabase...');
+  console.log('Obteniendo lista de películas desde Supabase...');
   const allMovies = [];
   const FETCH_PAGE = 1000;
   let from = 0;
@@ -102,7 +98,7 @@ async function loadTrailers() {
 
     const { data, error } = await query;
     if (error) {
-      console.error('❌ Error al obtener películas:', error.message);
+      console.error('Error al obtener películas:', error.message);
       process.exit(1);
     }
     if (!data || data.length === 0) break;
@@ -116,11 +112,11 @@ async function loadTrailers() {
     ? allMovies.filter(m => !m.trailer_key)
     : allMovies;
 
-  console.log(`📊 Total películas en DB: ${allMovies.length}`);
-  console.log(`🎯 A procesar ahora: ${toProcess.length} ${SKIP_EXISTING ? '(omitiendo las que ya tienen trailer)' : ''}`);
+  console.log(`Total películas en DB: ${allMovies.length}`);
+  console.log(`A procesar ahora: ${toProcess.length} ${SKIP_EXISTING ? '(omitiendo las que ya tienen trailer)' : ''}`);
 
   if (toProcess.length === 0) {
-    console.log('✅ Todas las películas ya tienen trailer_key. Nada que hacer.');
+    console.log('Todas las películas ya tienen trailer_key. Nada que hacer.');
     return;
   }
 
@@ -154,7 +150,7 @@ async function loadTrailers() {
         const elapsed = ((Date.now() - startTime) / 60000).toFixed(1);
         const eta = ((Date.now() - startTime) / processed * (toProcess.length - processed) / 60000).toFixed(1);
         process.stdout.write(
-          `\r  🔄 ${processed}/${toProcess.length} (${pct}%) · ✅ ${trailersFound} trailers · ⚠️ ${trailersNotFound} sin trailer · ⏱️ ${elapsed}m / ETA ${eta}m  `
+          `\r  ${processed}/${toProcess.length} (${pct}%) · ${trailersFound} trailers · ${trailersNotFound} sin trailer · ${elapsed}m / ETA ${eta}m  `
         );
       }
 
@@ -167,7 +163,7 @@ async function loadTrailers() {
       await sleep(DELAY_MS);
     } catch (err) {
       errors++;
-      console.error(`\n  ❌ Error en película ${movie.id} (${movie.title}):`, err.message);
+      console.error(`\n  Error en película ${movie.id} (${movie.title}):`, err.message);
     }
   }
 
@@ -179,14 +175,14 @@ async function loadTrailers() {
   const totalMinutes = ((Date.now() - startTime) / 60000).toFixed(1);
 
   console.log('\n\n' + '='.repeat(60));
-  console.log('🎉 ETL DE TRAILERS COMPLETADO');
+  console.log('ETL DE TRAILERS COMPLETADO');
   console.log('='.repeat(60));
   console.log(`   Películas procesadas: ${processed}`);
-  console.log(`   ✅ Con trailer encontrado: ${trailersFound}`);
-  console.log(`   ⚠️  Sin trailer disponible: ${trailersNotFound}`);
-  console.log(`   ❌ Errores: ${errors}`);
-  console.log(`   ⏱️  Tiempo total: ${totalMinutes} minutos`);
-  console.log(`   📊 Cobertura: ${((trailersFound / processed) * 100).toFixed(1)}%`);
+  console.log(`   Con trailer encontrado: ${trailersFound}`);
+  console.log(`   Sin trailer disponible: ${trailersNotFound}`);
+  console.log(`   Errores: ${errors}`);
+  console.log(`   Tiempo total: ${totalMinutes} minutos`);
+  console.log(`   Cobertura: ${((trailersFound / processed) * 100).toFixed(1)}%`);
 }
 
 /**
@@ -201,7 +197,7 @@ async function flushUpdates(updates) {
       .eq('id', update.id);
 
     if (error) {
-      console.error(`\n  ⚠️  Error al actualizar ${update.id}:`, error.message);
+      console.error(`\nError al actualizar ${update.id}:`, error.message);
     }
   }
 }
