@@ -1,21 +1,28 @@
-// src/App.jsx
 import { Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
 import Login from './pages/Login';
+import MovieDetail from './pages/MovieDetail';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   return (
     <Routes>
-      {/* Ruta pública */}
       <Route path="/login" element={<Login />} />
 
-      {/* Rutas protegidas */}
       <Route
         path="/"
         element={
           <ProtectedRoute>
             <Home />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/movies/:id"
+        element={
+          <ProtectedRoute>
+            <MovieDetail />
           </ProtectedRoute>
         }
       />

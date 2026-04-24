@@ -1,41 +1,74 @@
 import { useEffect, useState } from 'react';
-import { getMovies, getPosterUrl } from '../services/moviesService';
-import { useAuth } from '../context/AuthContext';
+import Navbar from '../components/Navbar';
+import HeroBanner from '../components/HeroBanner';
+import MovieRow from '../components/MovieRow';
+import {
+  getRandomHeroMovie,
+  getTopMovies,
+  getMoviesByGenre,
+} from '../services/moviesService';
+
+const GENRE_IDS = {
+  ACCION: 28,
+  CIENCIA_FICCION: 878,
+  COMEDIA: 35,
+  TERROR: 27,
+  ROMANCE: 10749,
+  ANIMACION: 16,
+};
 
 export default function Home() {
-  const { user, signOut } = useAuth();
-  const [movies, setMovies] = useState([]);
-  const [total, setTotal] = useState(0);
+  const [heroMovie, setHeroMovie] = useState(null);
+  const [rows, setRows] = useState({
+    top: [],
+    accion: [],
+    sciFi: [],
+    comedia: [],
+    terror: [],
+    romance: [],
+    animacion: [],
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    async function loadMovies() {
+    async function loadData() {
       try {
         setLoading(true);
-        const result = await getMovies({ page: 1 });
-        setMovies(result.movies);
-        setTotal(result.total);
+        const [hero, top, accion, sciFi, comedia, terror, romance, animacion] =
+          await Promise.all([
+            getRandomHeroMovie(),
+            getTopMovies(20),
+            getMoviesByGenre(GENRE_IDS.ACCION, 20),
+            getMoviesByGenre(GENRE_IDS.CIENCIA_FICCION, 20),
+            getMoviesByGenre(GENRE_IDS.COMEDIA, 20),
+            getMoviesByGenre(GENRE_IDS.TERROR, 20),
+            getMoviesByGenre(GENRE_IDS.ROMANCE, 20),
+            getMoviesByGenre(GENRE_IDS.ANIMACION, 20),
+          ]);
+
+        setHeroMovie(hero);
+        setRows({ top, accion, sciFi, comedia, terror, romance, animacion });
       } catch (err) {
         setError(err.message);
       } finally {
         setLoading(false);
       }
     }
-    loadMovies();
+    loadData();
   }, []);
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-2xl">Cargando películas...</p>
+      <div className="min-h-screen bg-netflix-black flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-netflix-red border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen bg-netflix-black flex items-center justify-center">
         <div className="text-center">
           <p className="text-2xl text-netflix-red mb-2">Error</p>
           <p className="text-gray-400">{error}</p>
@@ -45,52 +78,27 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen p-8">
-      <div className="flex items-center justify-between mb-2">
-        <h1 className="text-4xl font-bold text-netflix-red">Movies Explorer</h1>
-        <div className="flex items-center gap-4">
-          <span className="text-gray-300 text-sm">
-            {user?.user_metadata?.full_name || user?.email}
-          </span>
-          <button
-            onClick={signOut}
-            className="bg-netflix-red hover:bg-red-700 text-white px-4 py-2 rounded text-sm transition-colors"
-          >
-            Cerrar sesión
-          </button>
-        </div>
-      </div>
-      <p className="text-gray-400 mb-8">
-        Mostrando {movies.length} de {total.toLocaleString()} películas.
-      </p>
+    <div className="bg-netflix-black min-h-screen">
+      <Navbar />
+      <HeroBanner movie={heroMovie} />
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-        {movies.map((movie) => (
-          <div
-            key={movie.id}
-            className="bg-netflix-dark rounded overflow-hidden hover:scale-105 transition-transform cursor-pointer"
-          >
-            {movie.poster_path ? (
-              <img
-                src={getPosterUrl(movie.poster_path)}
-                alt={movie.title}
-                className="w-full h-auto"
-                loading="lazy"
-              />
-            ) : (
-              <div className="aspect-[2/3] bg-netflix-gray flex items-center justify-center text-xs text-gray-500">
-                Sin poster
-              </div>
-            )}
-            <div className="p-2">
-              <h3 className="text-sm font-semibold truncate">{movie.title}</h3>
-              <p className="text-xs text-gray-400">
-                {movie.release_year} · {movie.vote_average?.toFixed(1)}
-              </p>
-            </div>
-          </div>
-        ))}
+      <div className="relative -mt-40 z-10 pb-16 space-y-2">
+        <MovieRow title="Tendencias ahora" movies={rows.top} />
+        <MovieRow title="Acción sin límites" movies={rows.accion} />
+        <MovieRow title="Ciencia ficción" movies={rows.sciFi} />
+        <MovieRow title="Para reír" movies={rows.comedia} />
+        <MovieRow title="Terror" movies={rows.terror} />
+        <MovieRow title="Romance" movies={rows.romance} />
+        <MovieRow title="Animación" movies={rows.animacion} />
       </div>
+
+      <footer className="bg-netflix-black border-t border-netflix-gray py-8 px-8 md:px-16 text-center text-gray-500 text-sm">
+        <p>
+          Esta aplicación utiliza la API de TMDB pero no está respaldada ni
+          certificada por TMDB.
+        </p>
+        <p className="mt-2">Movies Explorer © 2026</p>
+      </footer>
     </div>
   );
 }

@@ -150,3 +150,85 @@ export function getTrailerEmbedUrl(key, { autoplay = true, mute = true, controls
     });
     return `https://www.youtube.com/embed/${key}?${params.toString()}`;
 }
+
+/**
+ * Obtiene una película aleatoria del top N para mostrar en el Hero.
+ * Idealmente una que tenga backdrop para que se vea bien.
+ */
+export async function getRandomHeroMovie() {
+  const { data, error } = await supabase
+    .from('movies')
+    .select(`
+      id, title, overview, backdrop_path, poster_path,
+      release_year, vote_average, trailer_key,
+      movie_genres ( genres ( id, name ) )
+    `)
+    .not('backdrop_path', 'is', null)
+    .order('popularity', { ascending: false })
+    .limit(20);
+
+  if (error) throw error;
+  if (!data || data.length === 0) return null;
+
+  const random = data[Math.floor(Math.random() * data.length)];
+  return {
+    ...random,
+    genres: random.movie_genres.map(mg => mg.genres),
+  };
+}
+
+/**
+ * Obtiene películas por género, ordenadas por popularidad.
+ * Útil para armar filas temáticas en el Home.
+ */
+export async function getMoviesByGenre(genreId, limit = 20) {
+  const { data: links } = await supabase
+    .from('movie_genres')
+    .select('movie_id')
+    .eq('genre_id', genreId)
+    .limit(limit * 2);
+
+  if (!links || links.length === 0) return [];
+
+  const movieIds = links.map(l => l.movie_id);
+
+  const { data, error } = await supabase
+    .from('movies')
+    .select(`
+      id, title, overview, poster_path, backdrop_path,
+      release_year, vote_average, trailer_key,
+      movie_genres ( genres ( id, name ) )
+    `)
+    .in('id', movieIds)
+    .order('popularity', { ascending: false })
+    .limit(limit);
+
+  if (error) throw error;
+
+  return (data || []).map(movie => ({
+    ...movie,
+    genres: movie.movie_genres.map(mg => mg.genres),
+  }));
+}
+
+/**
+ * Películas más populares (top general).
+ */
+export async function getTopMovies(limit = 20) {
+  const { data, error } = await supabase
+    .from('movies')
+    .select(`
+      id, title, overview, poster_path, backdrop_path,
+      release_year, vote_average, trailer_key,
+      movie_genres ( genres ( id, name ) )
+    `)
+    .order('popularity', { ascending: false })
+    .limit(limit);
+
+  if (error) throw error;
+
+  return (data || []).map(movie => ({
+    ...movie,
+    genres: movie.movie_genres.map(mg => mg.genres),
+  }));
+}
